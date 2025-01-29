@@ -10,7 +10,7 @@ My project models data that someone running a dog show might find useful. Includ
 
 ## Query I thought it did well on
 
-**Question**: What are the names and cities of the dogs who have awards?
+**Question**: What are the most popular exercises among users?
 
 **GPT SQL Response**:
 ```sql

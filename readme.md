@@ -1,20 +1,55 @@
-**config.json** should not be shared or committed. :)
+# Dog Show
 
-**setup.sql** setups the database.
+My project models data that someone running a work-out planner. Includes contact information about users and relevant information about the exercises.
 
-**db_bot.py** initializes the database, connects to openai, provides prompts and questions.
 
-**strategies** attempting to try out the three strategies “zero-shot, single-domain, and cross-domain” as outlined in this paper: https://arxiv.org/abs/2305.11853 <- read it 😊
 
-**responses_\<strategy>_\<time>.json** records the provided prompts and questions, as well as the generated SQL queries and responses.
+<img src="schema.png">
 
-**description** This database represents the mock data to manage an upcoming dogshow.
 
-<a href="sample_post.md">**sample_post.md**</a> is a sample report of the data in this effort.
 
-<a href="schema.png">schema.png</a> is a sample schema. Can you identify where foreign keys should exist but are not explicitly defined 😊? This was created from the sqlite database via <a href="https://www.google.com/search?q=install+schemacrawler">schemacrawler</a>:
+## Query I thought it did well on
+
+**Question**: What are the most popular exercises among users?
+
+**GPT SQL Response**:
+```sql
+SELECT e.name, 
+COUNT(ue.exercise_id) AS user_count 
+FROM exercises e 
+JOIN userExercises ue 
+ON e.exercise_id = ue.exercise_id 
+GROUP BY e.exercise_id 
+ORDER BY user_count DESC;
 ```
-schemacrawler --server sqlite --database .\aidb.sqlite --command=schema --output-file=./schema.png --info-level=standard
+
+**Friendly Response**: The most popular exercises are Squats with 3 users, Bench Press with 2 users, and Deadlifts with 1 user.
+
+
+
+
+## Question that it tripped up on
+The result of a question produced the wrong result. The SQL gave the wrong data set even though there is no user who exercises more than five.
+
+
+
+Question: Which users perform more than 5 exercises?
+
+**GPT SQL Response**:
+```sql
+SELECT u.user_id, u.name 
+FROM users u 
+JOIN userExercises ue ON u.user_id = ue.user_id 
+GROUP BY u.user_id 
+HAVING COUNT(ue.exercise_id) > 5;
+```
+
+SQL Result is just "IDs": [(1, 'Jisu Song'), (2, 'Tom Kim')]
+
+**Friendly response**: The result is supoosed to be none because there is no user who work out more than 5. I wouled have preferred it to say something like, "we cannot find the user who has exercises more than 5."
+
+## Conclusion
+It was hard for me to understand how this code works. I tried to understand the answers that gpt provided. It was fun to create my own data model and consider how to create table to make better data tables. 
 ```
 
 
