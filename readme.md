@@ -1,4 +1,4 @@
-# Dog Show
+# Work out planner
 
 My project models data that someone running a work-out planner. Includes contact information about users and relevant information about the exercises.
 
