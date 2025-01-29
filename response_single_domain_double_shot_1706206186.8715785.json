@@ -1,0 +1,55 @@
+{
+  "strategy": "workout_planner_data_analysis",
+  "prompt_prefix": "create table categories (\n    category_id integer primary key,\n    name varchar(20) not null\n);\n\ncreate table exercises (\n    exercise_id integer primary key,\n    name varchar(250) not null,\n    description text not null,\n    equipment varchar(250) not null,\n    intensity varchar(250) not null,\n    target_muscles varchar(250) not null\n);\n\ncreate table exerciseCategories (\n    exercise_id integer,\n    category_id integer,\n    primary key (exercise_id, category_id),\n    foreign key (exercise_id) references exercises (exercise_id),\n    foreign key (category_id) references categories (category_id)\n);\n\ncreate table userExercises (\n    user_id integer,\n    exercise_id integer,\n    sets integer not null,\n    reps integer not null,\n    created_at date,\n    primary key (user_id, exercise_id),\n    foreign key (user_id) references users (user_id),\n    foreign key (exercise_id) references exercises (exercise_id)\n);\n\ncreate table users (\n    user_id integer primary key,\n    email varchar(250) not null,\n    name varchar(250) not null,\n    gender boolean not null,\n    password varchar(250) not null\n);\n\nWhat are the most popular exercises among users? \nSELECT e.name, COUNT(ue.exercise_id) AS user_count \nFROM exercises e \nJOIN userExercises ue ON e.exercise_id = ue.exercise_id \nGROUP BY e.exercise_id \nORDER BY user_count DESC;\n  Give me a sqlite select statement that answers the question. Only respond with sqlite syntax. If there is an error do not explain it!",
+  "questionResults": [
+    {
+      "question": "Which users perform more than 5 exercises?",
+      "sql": "SELECT u.user_id, u.name \nFROM users u \nJOIN userExercises ue ON u.user_id = ue.user_id \nGROUP BY u.user_id \nHAVING COUNT(ue.exercise_id) > 5;",
+      "queryRawResponse": "[(1, 'Jisu Song'), (2, 'Tom Kim')]",
+      "friendlyResponse": "Jisu Song and Tom Kim perform more than 5 exercises.",
+      "error": "None"
+    },
+    {
+      "question": "What are the most popular exercises among users?",
+      "sql": "SELECT e.name, COUNT(ue.exercise_id) AS user_count \nFROM exercises e \nJOIN userExercises ue ON e.exercise_id = ue.exercise_id \nGROUP BY e.exercise_id \nORDER BY user_count DESC;",
+      "queryRawResponse": "[('Squats', 3), ('Bench Press', 2), ('Deadlifts', 1)]",
+      "friendlyResponse": "The most popular exercises are Squats with 3 users, Bench Press with 2 users, and Deadlifts with 1 user.",
+      "error": "None"
+    },
+    {
+      "question": "Which exercises target the shoulders?",
+      "sql": "SELECT e.name \nFROM exercises e \nWHERE e.target_muscles LIKE '%Shoulders%';",
+      "queryRawResponse": "[('Overhead Press'), ('Lateral Raises')]",
+      "friendlyResponse": "The exercises targeting the shoulders are Overhead Press and Lateral Raises.",
+      "error": "None"
+    },
+    {
+      "question": "Which users perform high-intensity exercises?",
+      "sql": "SELECT DISTINCT u.user_id, u.name \nFROM users u \nJOIN userExercises ue ON u.user_id = ue.user_id \nJOIN exercises e ON ue.exercise_id = e.exercise_id \nWHERE e.intensity = 'High';",
+      "queryRawResponse": "[(1, 'Jisu Song'), (3, 'Jimmy Lee')]",
+      "friendlyResponse": "Jisu Song and Jimmy Lee perform high-intensity exercises.",
+      "error": "None"
+    },
+    {
+      "question": "Which users perform exercises in the 'Arms' category?",
+      "sql": "SELECT DISTINCT u.user_id, u.name \nFROM users u \nJOIN userExercises ue ON u.user_id = ue.user_id \nJOIN exerciseCategories ec ON ue.exercise_id = ec.exercise_id \nJOIN categories c ON ec.category_id = c.category_id \nWHERE c.name = 'Arms';",
+      "queryRawResponse": "[(2, 'Tom Kim'), (3, 'Jimmy Lee')]",
+      "friendlyResponse": "Tom Kim and Jimmy Lee perform exercises in the 'Arms' category.",
+      "error": "None"
+    },
+    {
+      "question": "What is the average number of sets per exercise?",
+      "sql": "SELECT AVG(sets) \nFROM userExercises;",
+      "queryRawResponse": "[(3)]",
+      "friendlyResponse": "The average number of sets per exercise is 3.",
+      "error": "None"
+    },
+    {
+      "question": "Which users perform exercises in multiple categories?",
+      "sql": "SELECT u.user_id, u.name \nFROM users u \nJOIN userExercises ue ON u.user_id = ue.user_id \nJOIN exerciseCategories ec ON ue.exercise_id = ec.exercise_id \nGROUP BY u.user_id \nHAVING COUNT(DISTINCT ec.category_id) > 1;",
+      "queryRawResponse": "[(1, 'Jisu Song')]",
+      "friendlyResponse": "Jisu Song performs exercises in multiple categories.",
+      "error": "None"
+    }
+  ]
+}

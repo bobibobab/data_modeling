@@ -1,0 +1,55 @@
+{
+  "strategy": "zero_shot",
+  "prompt_prefix": "create table workout_plan (\n    workout_id integer primary key,\n    workout_name varchar(50) not null,\n    duration_minutes integer not null,\n    difficulty_level varchar(20) not null\n);\n\ncreate table workout_session (\n    session_id integer primary key,\n    workout_id integer not null,\n    date date not null,\n    calories_burned integer not null,\n    duration_minutes integer not null,\n    foreign key (workout_id) references workout_plan (workout_id)\n);\n\ncreate table user (\n    user_id integer primary key,\n    name varchar(50) not null,\n    age integer not null,\n    gender varchar(10) not null,\n    weight float not null,\n    height float not null\n);\n\ncreate table user_workout (\n    user_id integer not null,\n    workout_id integer not null,\n    foreign key (user_id) references user (user_id),\n    foreign key (workout_id) references workout_plan (workout_id)\n); Give me a sqlite select statement that answers the question. Only respond with sqlite syntax. If there is an error do not explain it!",
+  "questionResults": [
+    {
+      "question": "Which users have completed the most workout sessions?",
+      "sql": "SELECT u.name, COUNT(ws.session_id) AS total_sessions FROM user u JOIN user_workout uw ON u.user_id = uw.user_id JOIN workout_session ws ON uw.workout_id = ws.workout_id GROUP BY u.user_id ORDER BY total_sessions DESC LIMIT 1;",
+      "queryRawResponse": "[('John Doe', 15)]",
+      "friendlyResponse": "John Doe has completed the most workout sessions with 15.",
+      "error": "None"
+    },
+    {
+      "question": "Which workout plan is the most popular?",
+      "sql": "SELECT wp.workout_name, COUNT(ws.session_id) AS session_count FROM workout_plan wp JOIN workout_session ws ON wp.workout_id = ws.workout_id GROUP BY wp.workout_id ORDER BY session_count DESC LIMIT 1;",
+      "queryRawResponse": "[('Full Body Workout', 30)]",
+      "friendlyResponse": "The most popular workout plan is 'Full Body Workout' with 30 sessions.",
+      "error": "None"
+    },
+    {
+      "question": "Which users have participated in more than one workout plan?",
+      "sql": "SELECT u.name, COUNT(DISTINCT uw.workout_id) AS unique_workouts FROM user u JOIN user_workout uw ON u.user_id = uw.user_id GROUP BY u.user_id HAVING unique_workouts > 1;",
+      "queryRawResponse": "[('Jane Smith', 2), ('John Doe', 3)]",
+      "friendlyResponse": "Jane Smith and John Doe have participated in more than one workout plan.",
+      "error": "None"
+    },
+    {
+      "question": "What are the top 3 most common workout durations?",
+      "sql": "SELECT duration_minutes, COUNT(*) AS frequency FROM workout_session GROUP BY duration_minutes ORDER BY frequency DESC LIMIT 3;",
+      "queryRawResponse": "[('30', 25), ('60', 18), ('45', 12)]",
+      "friendlyResponse": "The top 3 most common workout durations are 30 minutes, 60 minutes, and 45 minutes.",
+      "error": "None"
+    },
+    {
+      "question": "Which users have burned the most calories in their workout sessions?",
+      "sql": "SELECT u.name, SUM(ws.calories_burned) AS total_calories_burned FROM user u JOIN user_workout uw ON u.user_id = uw.user_id JOIN workout_session ws ON uw.workout_id = ws.workout_id GROUP BY u.user_id ORDER BY total_calories_burned DESC LIMIT 1;",
+      "queryRawResponse": "[('John Doe', 1200)]",
+      "friendlyResponse": "John Doe has burned the most calories with a total of 1200 calories.",
+      "error": "None"
+    },
+    {
+      "question": "Who has the highest workout duration on average?",
+      "sql": "SELECT u.name, AVG(ws.duration_minutes) AS avg_duration FROM user u JOIN user_workout uw ON u.user_id = uw.user_id JOIN workout_session ws ON uw.workout_id = ws.workout_id GROUP BY u.user_id ORDER BY avg_duration DESC LIMIT 1;",
+      "queryRawResponse": "[('Jane Smith', 50)]",
+      "friendlyResponse": "Jane Smith has the highest average workout duration with 50 minutes.",
+      "error": "None"
+    },
+    {
+      "question": "What workout plan has the highest average difficulty?",
+      "sql": "SELECT wp.workout_name, AVG(CASE WHEN wp.difficulty_level = 'Easy' THEN 1 WHEN wp.difficulty_level = 'Medium' THEN 2 WHEN wp.difficulty_level = 'Hard' THEN 3 END) AS avg_difficulty FROM workout_plan wp JOIN workout_session ws ON wp.workout_id = ws.workout_id GROUP BY wp.workout_id ORDER BY avg_difficulty DESC LIMIT 1;",
+      "queryRawResponse": "[('Advanced Strength Training', 3)]",
+      "friendlyResponse": "The workout plan with the highest average difficulty is 'Advanced Strength Training' with a difficulty rating of 3 (Hard).",
+      "error": "None"
+    }
+  ]
+}
